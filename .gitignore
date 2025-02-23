@@ -1,0 +1,47 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Node modules
+node_modules/
+**/node_modules/
+
+# Build outputs (Vite, React, etc.)
+dist/
+build/
+out/
+.temp/
+dist-ssr/
+
+# IDE/Editor settings
+.idea/
+.vscode/
+!.vscode/extensions.json
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment variables
+.env
+.env.*
+# Or, if you specifically want to ignore environment variants:
+# .env.development
+# .env.production
+# .env.local
+# .env.test
+
+# Coverage directory (for tests)
+coverage/
+
+# Optional: lockfiles (uncomment if you do NOT want to commit them)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
