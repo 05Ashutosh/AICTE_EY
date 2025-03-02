@@ -7,9 +7,9 @@ import commentRoutes from "./comment.routes.js";
 
 const router = Router();
 
-router.use("/auth", authRoutes);
-router.use("/recipes", recipeRoutes);
-router.use("/likes", likeRoutes);
-router.use("/comments", commentRoutes);
+router.use("/auth", authRoutes); // Handles authentication routes
+router.use("/recipes", recipeRoutes); // Handles recipe-related routes
+router.use("/likes", likeRoutes); // Handles like-related routes
+router.use("/comments", commentRoutes); // Handles comment-related routes
 
 export default router;
