@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Spring Security Authentication Flow</title>
+    <!-- Include Tailwind CSS via CDN -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* Custom CSS for unique or complex elements */
+      .arrow {
+        position: absolute;
+        background-color: #94a3b8;
+        height: 2px;
+        transform-origin: left center;
+        opacity: 0;
+        z-index: 1;
+      }
+      .arrow::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: -3px;
+        width: 0;
+        height: 0;
+        border-top: 4px solid transparent;
+        border-bottom: 4px solid transparent;
+        border-left: 8px solid #94a3b8;
+      }
+      .arrow.visible {
+        opacity: 1;
+      }
+      .response-arrow {
+        background-color: #22c55e;
+      }
+      .response-arrow::after {
+        border-left-color: #22c55e;
+      }
+      .error-arrow {
+        background-color: #ef4444;
+      }
+      .error-arrow::after {
+        border-left-color: #ef4444;
+      }
+      .arrow-label {
+        position: absolute;
+        font-size: 11px;
+        padding: 2px 6px;
+        white-space: nowrap;
+        transform: translate(-50%, -50%);
+        z-index: 2;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .arrow.visible .arrow-label {
+        opacity: 1;
+      }
+      .component-tooltip {
+        position: absolute;
+        max-width: 250px;
+        z-index: 10;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+      .request {
+        position: absolute;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background-color: #3b82f6;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        z-index: 10;
+      }
+    </style>
+  </head>
+  <body class="font-sans m-0 p-5 bg-gray-100 text-gray-800">
+    <div class="container max-w-5xl mx-auto">
+      <h1 class="text-center text-gray-900 mb-8">
+        Spring Security Authentication Flow
+      </h1>
+      <div
+        class="diagram relative h-[500px] md:h-[600px] rounded-lg bg-white shadow-lg p-5 overflow-hidden"
+        id="diagram"
+      >
+        <!-- Components will be added via JavaScript -->
+      </div>
+      <div class="legend flex justify-center gap-5 mt-4 flex-wrap">
+        <div class="legend-item flex items-center gap-2">
+          <div class="legend-color w-4 h-4 rounded bg-blue-500"></div>
+          <span>User Request</span>
+        </div>
+        <div class="legend-item flex items-center gap-2">
+          <div class="legend-color w-4 h-4 rounded bg-gray-500"></div>
+          <span>Normal Flow</span>
+        </div>
+        <div class="legend-item flex items-center gap-2">
+          <div class="legend-color w-4 h-4 rounded bg-green-500"></div>
+          <span>Success Path</span>
+        </div>
+        <div class="legend-item flex items-center gap-2">
+          <div class="legend-color w-4 h-4 rounded bg-red-500"></div>
+          <span>Error Path</span>
+        </div>
+      </div>
+      <div
+        class="controls flex flex-col md:flex-row justify-center mt-5 gap-3 flex-wrap"
+      >
+        <button
+          id="startBtn"
+          class="px-5 py-2.5 bg-blue-500 text-white rounded-md font-medium shadow-sm transition-all duration-200 hover:bg-blue-600 hover:-translate-y-0.5 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          Start Animation
+        </button>
+        <div class="navigation-buttons flex gap-3">
+          <button
+            id="prevBtn"
+            disabled
+            class="px-5 py-2.5 bg-blue-500 text-white rounded-md font-medium shadow-sm transition-all duration-200 hover:bg-blue-600 hover:-translate-y-0.5 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          <button
+            id="nextBtn"
+            disabled
+            class="px-5 py-2.5 bg-blue-500 text-white rounded-md font-medium shadow-sm transition-all duration-200 hover:bg-blue-600 hover:-translate-y-0.5 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+        <button
+          id="resetBtn"
+          class="px-5 py-2.5 bg-blue-500 text-white rounded-md font-medium shadow-sm transition-all duration-200 hover:bg-blue-600 hover:-translate-y-0.5 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          Reset
+        </button>
+        <button
+          id="toggleAuthBtn"
+          class="px-5 py-2.5 bg-blue-500 text-white rounded-md font-medium shadow-sm transition-all duration-200 hover:bg-blue-600 hover:-translate-y-0.5 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          Toggle Auth Success/Failure
+        </button>
+      </div>
+      <div class="description-panel mt-5 p-5 rounded-lg bg-white shadow-sm">
+        <h2
+          class="flex justify-between items-center text-lg text-gray-900 mb-3"
+        >
+          Current Step
+          <span class="step-counter text-sm text-gray-500" id="stepCounter"
+            >0/0</span
+          >
+        </h2>
+        <p id="description" class="text-gray-700 leading-relaxed">
+          Press "Start Animation" to begin the authentication flow
+          visualization. Hover over any component to see more details about its
+          role in Spring Security.
+        </p>
+      </div>
+    </div>
+
+    <script>
+      // JavaScript remains unchanged as it handles functionality, not styling
+      document.addEventListener("DOMContentLoaded", function () {
+        const components = [
+          {
+            id: "user",
+            name: "User",
+            description: "Initiates authentication",
+            x: 50,
+            y: 250,
+            width: 100,
+            height: 60,
+            details:
+              "The user or client application that attempts to access a protected resource. The user submits credentials (like username/password) through a login form or other authentication mechanism.",
+          },
+          {
+            id: "filters",
+            name: "Security Filters",
+            description: "Intercept requests",
+            x: 220,
+            y: 120,
+            width: 150,
+            height: 80,
+            details:
+              "Spring Security uses a chain of servlet filters to intercept incoming requests. Specific filters like UsernamePasswordAuthenticationFilter for form login or BasicAuthenticationFilter for HTTP Basic authentication handle different authentication methods.",
+          },
+          {
+            id: "authManager",
+            name: "Authentication Manager",
+            description: "Orchestrates authentication",
+            x: 450,
+            y: 120,
+            width: 180,
+            height: 80,
+            details:
+              "The central interface in Spring Security that manages the authentication process. It's typically implemented as a ProviderManager that delegates to one or more AuthenticationProvider instances. The AuthenticationManager decides how authentication is performed and coordinates the whole process.",
+          },
+          {
+            id: "authProvider",
+            name: "Authentication Provider",
+            description: "Validates credentials",
+            x: 700,
+            y: 120,
+            width: 180,
+            height: 80,
+            details:
+              "Handles specific types of authentication. For example, DaoAuthenticationProvider validates username/password credentials by querying a UserDetailsService. Other providers might handle OAuth tokens, SAML assertions, or other authentication methods.",
+          },
+          {
+            id: "userDetailsService",
+            name: "UserDetailsService",
+            description: "Loads user details",
+            x: 700,
+            y: 250,
+            width: 180,
+            height: 80,
+            details:
+              "A core interface in Spring Security that loads user-specific data. It has one method, loadUserByUsername(), which returns a UserDetails object containing the username, password, authorities (roles), and other account status information.",
+          },
+          {
+            id: "database",
+            name: "Database",
+            description: "Stores user credentials",
+            x: 700,
+            y: 380,
+            width: 180,
+            height: 80,
+            details:
+              "The persistent storage for user credentials and roles. This could be a relational database, LDAP directory, or any other data store. Spring Security is designed to be flexible with different backend storage options.",
+          },
+          {
+            id: "securityContext",
+            name: "SecurityContextHolder",
+            description: "Stores authenticated user",
+            x: 450,
+            y: 250,
+            width: 180,
+            height: 80,
+            details:
+              "A helper class that provides access to the security context. After successful authentication, the Authentication object is stored in the SecurityContextHolder, making it available throughout the application for authorization checks.",
+          },
+          {
+            id: "resource",
+            name: "Protected Resource",
+            description: "Secured application content",
+            x: 220,
+            y: 380,
+            width: 150,
+            height: 80,
+            details:
+              "The endpoint, service, or content that requires authentication to access. Once authentication is successful, the request is allowed to proceed to the protected resource, subject to authorization checks based on the user's roles or permissions.",
+          },
+        ];
+
+        const arrows = [
+          {
+            id: "user-filters",
+            from: "user",
+            to: "filters",
+            label: "1. Request",
+            midX: 0,
+            midY: -20,
+          },
+          {
+            id: "filters-authManager",
+            from: "filters",
+            to: "authManager",
+            label: "2. Pass credentials",
+            midX: 0,
+            midY: -15,
+          },
+          {
+            id: "authManager-authProvider",
+            from: "authManager",
+            to: "authProvider",
+            label: "3. Delegate auth",
+            midX: 0,
+            midY: -15,
+          },
+          {
+            id: "authProvider-userDetailsService",
+            from: "authProvider",
+            to: "userDetailsService",
+            label: "4. Load user",
+            midX: 20,
+            midY: 0,
+          },
+          {
+            id: "userDetailsService-database",
+            from: "userDetailsService",
+            to: "database",
+            label: "5. Query",
+            midX: 20,
+            midY: 0,
+          },
+          {
+            id: "database-userDetailsService",
+            from: "database",
+            to: "userDetailsService",
+            label: "6. Return data",
+            isResponse: true,
+            midX: -20,
+            midY: 0,
+          },
+          {
+            id: "userDetailsService-authProvider",
+            from: "userDetailsService",
+            to: "authProvider",
+            label: "7. Return user details",
+            isResponse: true,
+            midX: -20,
+            midY: 0,
+          },
+          {
+            id: "authProvider-authManager",
+            from: "authProvider",
+            to: "authManager",
+            label: "8. Authentication result",
+            isResponse: true,
+            midX: 0,
+            midY: 15,
+          },
+          {
+            id: "authManager-securityContext",
+            from: "authManager",
+            to: "securityContext",
+            label: "9. Store auth",
+            isResponse: true,
+            midX: 20,
+            midY: 0,
+          },
+          {
+            id: "securityContext-filters",
+            from: "securityContext",
+            to: "filters",
+            label: "10. Continue chain",
+            isResponse: true,
+            midX: -20,
+            midY: -30,
+          },
+          {
+            id: "filters-resource",
+            from: "filters",
+            to: "resource",
+            label: "11. Access resource",
+            isResponse: true,
+            midX: -20,
+            midY: 0,
+          },
+          {
+            id: "resource-user",
+            from: "resource",
+            to: "user",
+            label: "12. Return resource",
+            isResponse: true,
+            midX: 0,
+            midY: -20,
+          },
+        ];
+
+        const errorArrows = [
+          {
+            id: "authProvider-authManager-error",
+            from: "authProvider",
+            to: "authManager",
+            label: "8. Auth failed",
+            isError: true,
+            midX: 0,
+            midY: 30,
+          },
+          {
+            id: "authManager-filters-error",
+            from: "authManager",
+            to: "filters",
+            label: "9. Return error",
+            isError: true,
+            midX: 0,
+            midY: 30,
+          },
+          {
+            id: "filters-user-error",
+            from: "filters",
+            to: "user",
+            label: "10. Show login page",
+            isError: true,
+            midX: 20,
+            midY: 30,
+          },
+        ];
+
+        let currentStep = 0;
+        let animationTimeout = null;
+        let isAuthSuccess = true;
+        let isAnimationRunning = false;
+        let animationInterval = 1500;
+
+        const diagramEl = document.getElementById("diagram");
+        const startBtn = document.getElementById("startBtn");
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const resetBtn = document.getElementById("resetBtn");
+        const toggleAuthBtn = document.getElementById("toggleAuthBtn");
+        const descriptionEl = document.getElementById("description");
+        const stepCounterEl = document.getElementById("stepCounter");
+
+        function createComponents() {
+          components.forEach((comp) => {
+            const el = document.createElement("div");
+            el.id = comp.id;
+            el.className =
+              "component absolute border-2 border-gray-300 rounded-md p-2.5 bg-white flex flex-col items-center justify-center text-center transition-all duration-300 shadow-sm cursor-pointer z-10 hover:-translate-y-1 hover:shadow-xl";
+            el.style.left = `${comp.x}px`;
+            el.style.top = `${comp.y}px`;
+            el.style.width = `${comp.width}px`;
+            el.style.height = `${comp.height}px`;
+
+            const title = document.createElement("h3");
+            title.className = "text-sm m-0 mb-1";
+            title.textContent = comp.name;
+
+            const desc = document.createElement("p");
+            desc.className = "text-xs m-0 text-gray-500";
+            desc.textContent = comp.description;
+
+            el.appendChild(title);
+            el.appendChild(desc);
+
+            const tooltip = document.createElement("div");
+            tooltip.className =
+              "component-tooltip bg-gray-800 text-white p-3 rounded-md shadow-lg";
+            tooltip.innerHTML = `<h4 class="m-0 mb-2 text-sm">${comp.name}</h4><p class="m-0 text-xs leading-relaxed text-gray-300">${comp.details}</p>`;
+
+            el.addEventListener("mouseenter", function (e) {
+              const rect = el.getBoundingClientRect();
+              const diagramRect = diagramEl.getBoundingClientRect();
+              tooltip.style.left = `${
+                rect.left - diagramRect.left + rect.width + 10
+              }px`;
+              tooltip.style.top = `${rect.top - diagramRect.top}px`;
+              tooltip.style.opacity = "1";
+            });
+
+            el.addEventListener("mouseleave", function () {
+              tooltip.style.opacity = "0";
+            });
+
+            diagramEl.appendChild(el);
+            diagramEl.appendChild(tooltip);
+          });
+        }
+
+        function calculateArrowPoints(fromEl, toEl) {
+          const fromRect = fromEl.getBoundingClientRect();
+          const toRect = toEl.getBoundingClientRect();
+          const diagramRect = diagramEl.getBoundingClientRect();
+
+          const fromCenterX =
+            fromRect.left - diagramRect.left + fromRect.width / 2;
+          const fromCenterY =
+            fromRect.top - diagramRect.top + fromRect.height / 2;
+          const toCenterX = toRect.left - diagramRect.left + toRect.width / 2;
+          const toCenterY = toRect.top - diagramRect.top + toRect.height / 2;
+
+          let fromX, fromY, toX, toY;
+          const dx = toCenterX - fromCenterX;
+          const dy = toCenterY - fromCenterY;
+          const adx = Math.abs(dx);
+          const ady = Math.abs(dy);
+
+          if (adx > ady) {
+            fromY = fromCenterY;
+            toY = toCenterY;
+            if (dx > 0) {
+              fromX = fromRect.right - diagramRect.left;
+              toX = toRect.left - diagramRect.left;
+            } else {
+              fromX = fromRect.left - diagramRect.left;
+              toX = toRect.right - diagramRect.left;
+            }
+          } else {
+            fromX = fromCenterX;
+            toX = toCenterX;
+            if (dy > 0) {
+              fromY = fromRect.bottom - diagramRect.top;
+              toY = toRect.top - diagramRect.top;
+            } else {
+              fromY = fromRect.top - diagramRect.top;
+              toY = toRect.bottom - diagramRect.top;
+            }
+          }
+          return { fromX, fromY, toX, toY };
+        }
+
+        function createArrowsEnhanced() {
+          document
+            .querySelectorAll(".arrow")
+            .forEach((el) => diagramEl.removeChild(el));
+          const allArrows = [...arrows, ...errorArrows];
+
+          allArrows.forEach((arrow) => {
+            const fromEl = document.getElementById(arrow.from);
+            const toEl = document.getElementById(arrow.to);
+            if (!fromEl || !toEl) return;
+
+            const points = calculateArrowPoints(fromEl, toEl);
+            const dx = points.toX - points.fromX;
+            const dy = points.toY - points.fromY;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+
+            const arrowEl = document.createElement("div");
+            arrowEl.id = arrow.id;
+            arrowEl.className = `arrow ${
+              arrow.isResponse ? "response-arrow" : ""
+            } ${arrow.isError ? "error-arrow" : ""}`;
+            arrowEl.style.width = `${length}px`;
+            arrowEl.style.left = `${points.fromX}px`;
+            arrowEl.style.top = `${points.fromY}px`;
+            arrowEl.style.transform = `rotate(${angle}deg)`;
+
+            const labelEl = document.createElement("div");
+            labelEl.className =
+              "arrow-label bg-white text-gray-600 border border-gray-200 rounded-full shadow-sm";
+            labelEl.textContent = arrow.label;
+            const midX = points.fromX + dx / 2 + (arrow.midX || 0);
+            const midY = points.fromY + dy / 2 + (arrow.midY || 0);
+            labelEl.style.left = `${midX}px`;
+            labelEl.style.top = `${midY}px`;
+
+            arrowEl.appendChild(labelEl);
+            diagramEl.appendChild(arrowEl);
+          });
+        }
+
+        function highlightComponent(id) {
+          document
+            .querySelectorAll(".component")
+            .forEach((el) => el.classList.remove("highlight"));
+          const component = document.getElementById(id);
+          if (component)
+            component.classList.add(
+              "highlight border-blue-500 shadow-[0_4px_12px_rgba(37,99,235,0.3)] z-20"
+            );
+        }
+
+        function highlightArrow(id) {
+          document
+            .querySelectorAll(".arrow")
+            .forEach((el) => el.classList.remove("visible"));
+          const arrow = document.getElementById(id);
+          if (arrow) {
+            arrow.classList.add("visible");
+            const fromComponent = document.getElementById(
+              arrow.id.split("-")[0]
+            );
+            const toComponent = document.getElementById(arrow.id.split("-")[1]);
+            if (fromComponent && toComponent) {
+              const fromRect = fromComponent.getBoundingClientRect();
+              const toRect = toComponent.getBoundingClientRect();
+              const diagramRect = diagramEl.getBoundingClientRect();
+
+              const fromX =
+                fromRect.left - diagramRect.left + fromRect.width / 2;
+              const fromY =
+                fromRect.top - diagramRect.top + fromRect.height / 2;
+
+              const requestDot = document.createElement("div");
+              requestDot.className = "request";
+              requestDot.style.left = `${fromX - 7.5}px`;
+              requestDot.style.top = `${fromY - 7.5}px`;
+              diagramEl.appendChild(requestDot);
+
+              setTimeout(() => {
+                requestDot.style.opacity = "1";
+              }, 10);
+
+              setTimeout(() => {
+                const toX = toRect.left - diagramRect.left + toRect.width / 2;
+                const toY = toRect.top - diagramRect.top + toRect.height / 2;
+                requestDot.style.transition = "left 0.8s ease, top 0.8s ease";
+                requestDot.style.left = `${toX - 7.5}px`;
+                requestDot.style.top = `${toY - 7.5}px`;
+                setTimeout(() => diagramEl.removeChild(requestDot), 1000);
+              }, 100);
+
+              updateDescription(
+                arrow.querySelector(".arrow-label").textContent
+              );
+            }
+          }
+        }
+
+        function updateDescription(text) {
+          descriptionEl.innerHTML = text;
+        }
+
+        function updateStepCounter(current, total) {
+          stepCounterEl.textContent = `${current}/${total}`;
+        }
+
+        const successSteps = [
+          {
+            action: "highlight",
+            target: "user",
+            description: "User attempts to access a protected resource",
+          },
+          {
+            action: "arrow",
+            target: "user-filters",
+            description: "1. User sends a request to access protected resource",
+          },
+          {
+            action: "highlight",
+            target: "filters",
+            description: "Security filters intercept the request",
+          },
+          {
+            action: "arrow",
+            target: "filters-authManager",
+            description:
+              "2. Security filters create an Authentication object and pass it to the AuthenticationManager",
+          },
+          {
+            action: "highlight",
+            target: "authManager",
+            description:
+              "AuthenticationManager receives the authentication request",
+          },
+          {
+            action: "arrow",
+            target: "authManager-authProvider",
+            description:
+              "3. AuthenticationManager delegates to appropriate AuthenticationProvider",
+          },
+          {
+            action: "highlight",
+            target: "authProvider",
+            description:
+              "AuthenticationProvider handles specific authentication type",
+          },
+          {
+            action: "arrow",
+            target: "authProvider-userDetailsService",
+            description:
+              "4. AuthenticationProvider requests user details from UserDetailsService",
+          },
+          {
+            action: "highlight",
+            target: "userDetailsService",
+            description: "UserDetailsService loads user details",
+          },
+          {
+            action: "arrow",
+            target: "userDetailsService-database",
+            description:
+              "5. UserDetailsService queries the database for user information",
+          },
+          {
+            action: "highlight",
+            target: "database",
+            description: "Database stores user credentials and roles",
+          },
+          {
+            action: "arrow",
+            target: "database-userDetailsService",
+            description: "6. Database returns the user information",
+          },
+          {
+            action: "highlight",
+            target: "userDetailsService",
+            description: "UserDetailsService processes the data",
+          },
+          {
+            action: "arrow",
+            target: "userDetailsService-authProvider",
+            description: "7. UserDetailsService returns UserDetails object",
+          },
+          {
+            action: "highlight",
+            target: "authProvider",
+            description: "AuthenticationProvider validates the credentials",
+          },
+          {
+            action: "arrow",
+            target: "authProvider-authManager",
+            description:
+              "8. AuthenticationProvider returns authenticated object with authorities (roles)",
+          },
+          {
+            action: "highlight",
+            target: "authManager",
+            description:
+              "AuthenticationManager receives the authenticated object",
+          },
+          {
+            action: "arrow",
+            target: "authManager-securityContext",
+            description:
+              "9. Authentication is stored in the SecurityContextHolder",
+          },
+          {
+            action: "highlight",
+            target: "securityContext",
+            description:
+              "SecurityContextHolder stores the authentication for the current thread",
+          },
+          {
+            action: "arrow",
+            target: "securityContext-filters",
+            description:
+              "10. Authentication is complete, security chain continues",
+          },
+          {
+            action: "highlight",
+            target: "filters",
+            description: "Filters proceed with the request",
+          },
+          {
+            action: "arrow",
+            target: "filters-resource",
+            description: "11. Request proceeds to the protected resource",
+          },
+          {
+            action: "highlight",
+            target: "resource",
+            description: "Protected resource is accessed",
+          },
+          {
+            action: "arrow",
+            target: "resource-user",
+            description: "12. Protected resource is returned to the user",
+          },
+          {
+            action: "highlight",
+            target: "user",
+            description: "User receives the protected resource",
+          },
+          {
+            action: "complete",
+            description:
+              '<span class="text-green-600 font-medium">Authentication successful! User can access the protected resource.</span>',
+          },
+        ];
+
+        const failureSteps = [
+          {
+            action: "highlight",
+            target: "user",
+            description: "User attempts to access a protected resource",
+          },
+          {
+            action: "arrow",
+            target: "user-filters",
+            description: "1. User sends a request to access protected resource",
+          },
+          {
+            action: "highlight",
+            target: "filters",
+            description: "Security filters intercept the request",
+          },
+          {
+            action: "arrow",
+            target: "filters-authManager",
+            description:
+              "2. Security filters create an Authentication object and pass it to the AuthenticationManager",
+          },
+          {
+            action: "highlight",
+            target: "authManager",
+            description:
+              "AuthenticationManager receives the authentication request",
+          },
+          {
+            action: "arrow",
+            target: "authManager-authProvider",
+            description:
+              "3. AuthenticationManager delegates to appropriate AuthenticationProvider",
+          },
+          {
+            action: "highlight",
+            target: "authProvider",
+            description:
+              "AuthenticationProvider handles specific authentication type",
+          },
+          {
+            action: "arrow",
+            target: "authProvider-userDetailsService",
+            description:
+              "4. AuthenticationProvider requests user details from UserDetailsService",
+          },
+          {
+            action: "highlight",
+            target: "userDetailsService",
+            description: "UserDetailsService loads user details",
+          },
+          {
+            action: "arrow",
+            target: "userDetailsService-database",
+            description:
+              "5. UserDetailsService queries the database for user information",
+          },
+          {
+            action: "highlight",
+            target: "database",
+            description: "Database stores user credentials and roles",
+          },
+          {
+            action: "arrow",
+            target: "database-userDetailsService",
+            description: "6. Database returns the user information",
+          },
+          {
+            action: "highlight",
+            target: "userDetailsService",
+            description: "UserDetailsService processes the data",
+          },
+          {
+            action: "arrow",
+            target: "userDetailsService-authProvider",
+            description: "7. UserDetailsService returns UserDetails object",
+          },
+          {
+            action: "highlight",
+            target: "authProvider",
+            description:
+              "AuthenticationProvider validates credentials but finds them invalid",
+          },
+          {
+            action: "arrow",
+            target: "authProvider-authManager-error",
+            description:
+              "8. AuthenticationProvider throws AuthenticationException",
+          },
+          {
+            action: "highlight",
+            target: "authManager",
+            description: "AuthenticationManager receives the exception",
+          },
+          {
+            action: "arrow",
+            target: "authManager-filters-error",
+            description:
+              "9. AuthenticationManager propagates the exception to filters",
+          },
+          {
+            action: "highlight",
+            target: "filters",
+            description: "Security filters handle the authentication failure",
+          },
+          {
+            action: "arrow",
+            target: "filters-user-error",
+            description:
+              "10. Security filters redirect to login page or return 401 Unauthorized",
+          },
+          {
+            action: "highlight",
+            target: "user",
+            description: "User is shown authentication error",
+          },
+          {
+            action: "complete",
+            description:
+              '<span class="text-red-600 font-medium">Authentication failed! User is prompted to try again.</span>',
+          },
+        ];
+
+        function performStep(stepIndex) {
+          const steps = isAuthSuccess ? successSteps : failureSteps;
+          if (stepIndex < 0 || stepIndex >= steps.length) return;
+
+          currentStep = stepIndex;
+          const step = steps[currentStep];
+
+          document
+            .querySelectorAll(".arrow")
+            .forEach((el) => el.classList.remove("visible"));
+          if (step.action === "highlight") highlightComponent(step.target);
+          else if (step.action === "arrow") highlightArrow(step.target);
+
+          updateDescription(step.description);
+          updateStepCounter(currentStep + 1, steps.length);
+          prevBtn.disabled = currentStep === 0;
+          nextBtn.disabled = currentStep === steps.length - 1;
+        }
+
+        function startAnimation() {
+          if (isAnimationRunning) return;
+          resetAnimation();
+          isAnimationRunning = true;
+          startBtn.disabled = true;
+          toggleAuthBtn.disabled = true;
+          prevBtn.disabled = false;
+          nextBtn.disabled = false;
+          runAnimation();
+        }
+
+        function runAnimation() {
+          const steps = isAuthSuccess ? successSteps : failureSteps;
+          if (currentStep < steps.length) {
+            performStep(currentStep);
+            animationTimeout = setTimeout(() => {
+              currentStep++;
+              runAnimation();
+            }, animationInterval);
+          } else {
+            isAnimationRunning = false;
+            startBtn.disabled = false;
+            toggleAuthBtn.disabled = false;
+          }
+        }
+
+        function resetAnimation() {
+          if (animationTimeout) {
+            clearTimeout(animationTimeout);
+            animationTimeout = null;
+          }
+          currentStep = 0;
+          isAnimationRunning = false;
+
+          document
+            .querySelectorAll(".component")
+            .forEach((el) =>
+              el.classList.remove(
+                "highlight",
+                "border-blue-500",
+                "shadow-[0_4px_12px_rgba(37,99,235,0.3)]",
+                "z-20"
+              )
+            );
+          document
+            .querySelectorAll(".arrow")
+            .forEach((el) => el.classList.remove("visible"));
+          document
+            .querySelectorAll(".request")
+            .forEach((el) => diagramEl.removeChild(el));
+
+          updateDescription(
+            'Press "Start Animation" to begin the authentication flow visualization. Hover over any component to see more details about its role in Spring Security.'
+          );
+          const steps = isAuthSuccess ? successSteps : failureSteps;
+          updateStepCounter(0, steps.length);
+
+          startBtn.disabled = false;
+          prevBtn.disabled = true;
+          nextBtn.disabled = true;
+          toggleAuthBtn.disabled = false;
+        }
+
+        function toggleAuthSuccess() {
+          isAuthSuccess = !isAuthSuccess;
+          resetAnimation();
+          toggleAuthBtn.textContent = isAuthSuccess
+            ? "Toggle to Auth Failure"
+            : "Toggle to Auth Success";
+        }
+
+        startBtn.addEventListener("click", startAnimation);
+        resetBtn.addEventListener("click", resetAnimation);
+        prevBtn.addEventListener("click", () => {
+          if (animationTimeout) clearTimeout(animationTimeout);
+          isAnimationRunning = false;
+          if (currentStep > 0) performStep(currentStep - 1);
+        });
+        nextBtn.addEventListener("click", () => {
+          if (animationTimeout) clearTimeout(animationTimeout);
+          isAnimationRunning = false;
+          const steps = isAuthSuccess ? successSteps : failureSteps;
+          if (currentStep < steps.length - 1) performStep(currentStep + 1);
+        });
+        toggleAuthBtn.addEventListener("click", toggleAuthSuccess);
+
+        window.addEventListener("resize", function () {
+          if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
+          this.resizeTimeout = setTimeout(createArrowsEnhanced, 300);
+        });
+
+        createComponents();
+        createArrowsEnhanced();
+        resetAnimation();
+      });
+    </script>
+  </body>
+</html>
