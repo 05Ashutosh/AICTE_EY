@@ -1,179 +1,220 @@
 const recipes = [
-    {
+  {
     id: 1,
-        author: "Chef Maria",
-        username: "chefmaria",
-        authorAvatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop",
-        image: "https://images.unsplash.com/photo-1506368249639-73a05d6f6488?w=800&q=80",
-        title: "Homemade Pasta Carbonara",
-        likes: 1234,
-        category:"lunch",
-        comments: 89,
-        prepTime: 30,
-        cookTime: 15,
-        difficulty: "Intermediate",
-        ingredients: [
-        "200g spaghetti",
-        "100g pancetta",
-        "2 large eggs",
-        "50g Pecorino Romano",
-        "50g Parmigiano Reggiano",
-        "Black pepper",
-        "Salt"
+    author: "Chef Maria",
+    username: "chefmaria",
+    authorAvatar:
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1506368249639-73a05d6f6488?w=800&q=80",
+    title: "Homemade Pasta Carbonara",
+    likes: 1234,
+    category: "lunch",
+    comments: 89,
+    prepTime: 30,
+    cookTime: 15,
+    difficulty: "Intermediate",
+    ingredients: [
+      "200g spaghetti",
+      "100g pancetta",
+      "2 large eggs",
+      "50g Pecorino Romano",
+      "50g Parmigiano Reggiano",
+      "Black pepper",
+      "Salt",
     ],
-        steps: [
-        "Bring a large pot of salted water to boil",
-        "Cook pasta according to package instructions",
-        "Meanwhile, crisp the pancetta in a pan",
-        "Mix eggs, cheese, and pepper in a bowl",
-        "Combine hot pasta with egg mixture and pancetta"
+    steps: [
+      "Bring a large pot of salted water to boil",
+      "Cook pasta according to package instructions",
+      "Meanwhile, crisp the pancetta in a pan",
+      "Mix eggs, cheese, and pepper in a bowl",
+      "Combine hot pasta with egg mixture and pancetta",
     ],
-        description: "Classic Italian carbonara made with fresh ingredients. A perfect comfort food for any day!"
-}, {
+    description:
+      "Classic Italian carbonara made with fresh ingredients. A perfect comfort food for any day!",
+  },
+  {
     id: 2,
-        author: "Baker John",
-        username: "bakerjohn",
-        authorAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop",
-        image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80",
-        title: "Artisan Sourdough Bread",
-        likes: 2156,
-        category:"soup",
-        comments: 167,
-        prepTime: 120,
-        cookTime: 45,
-        difficulty: "Advanced",
-        ingredients: [
-        "500g bread flour",
-        "350g water",
-        "100g active sourdough starter",
-        "10g salt"
+    author: "Baker John",
+    username: "bakerjohn",
+    authorAvatar:
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80",
+    title: "Artisan Sourdough Bread",
+    likes: 2156,
+    category: "soup",
+    comments: 167,
+    prepTime: 120,
+    cookTime: 45,
+    difficulty: "Advanced",
+    ingredients: [
+      "500g bread flour",
+      "350g water",
+      "100g active sourdough starter",
+      "10g salt",
     ],
-        steps: [
-        "Mix flour and water, let autolyse for 1 hour",
-        "Add starter and salt, perform stretch and folds",
-        "Bulk ferment for 4-6 hours",
-        "Shape and cold proof overnight",
-        "Bake in Dutch oven at 450°F"
+    steps: [
+      "Mix flour and water, let autolyse for 1 hour",
+      "Add starter and salt, perform stretch and folds",
+      "Bulk ferment for 4-6 hours",
+      "Shape and cold proof overnight",
+      "Bake in Dutch oven at 450°F",
     ],
-        description: "Crusty on the outside, soft on the inside. 24-hour fermented sourdough bread."
-},
-    {
-        id: 1,
-        author: "Chef Maria",
-        username: "chefmaria",
-        authorAvatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop",
-        image: "https://images.unsplash.com/photo-1506368249639-73a05d6f6488?w=800&q=80",
-        title: "Homemade Pasta Carbonara",
-        likes: 1234,
-        category:"lunch",
-        comments: 89,
-        prepTime: 30,
-        cookTime: 15,
-        difficulty: "Intermediate",
-        ingredients: [
-            "200g spaghetti",
-            "100g pancetta",
-            "2 large eggs",
-            "50g Pecorino Romano",
-            "50g Parmigiano Reggiano",
-            "Black pepper",
-            "Salt"
-        ],
-        steps: [
-            "Bring a large pot of salted water to boil",
-            "Cook pasta according to package instructions",
-            "Meanwhile, crisp the pancetta in a pan",
-            "Mix eggs, cheese, and pepper in a bowl",
-            "Combine hot pasta with egg mixture and pancetta"
-        ],
-        description: "Classic Italian carbonara made with fresh ingredients. A perfect comfort food for any day!"
-    }, {
-        id: 2,
-        author: "Baker John",
-        username: "bakerjohn",
-        authorAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop",
-        image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80",
-        title: "Artisan Sourdough Bread",
-        likes: 2156,
-        category:"soup",
-        comments: 167,
-        prepTime: 120,
-        cookTime: 45,
-        difficulty: "Advanced",
-        ingredients: [
-            "500g bread flour",
-            "350g water",
-            "100g active sourdough starter",
-            "10g salt"
-        ],
-        steps: [
-            "Mix flour and water, let autolyse for 1 hour",
-            "Add starter and salt, perform stretch and folds",
-            "Bulk ferment for 4-6 hours",
-            "Shape and cold proof overnight",
-            "Bake in Dutch oven at 450°F"
-        ],
-        description: "Crusty on the outside, soft on the inside. 24-hour fermented sourdough bread."
-    },
-
-    {
-        id: 1,
-        author: "Chef Maria",
-        username: "chefmaria",
-        authorAvatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop",
-        image: "https://images.unsplash.com/photo-1506368249639-73a05d6f6488?w=800&q=80",
-        title: "Homemade Pasta Carbonara",
-        likes: 1234,
-        category:"lunch",
-        comments: 89,
-        prepTime: 30,
-        cookTime: 15,
-        difficulty: "Intermediate",
-        ingredients: [
-            "200g spaghetti",
-            "100g pancetta",
-            "2 large eggs",
-            "50g Pecorino Romano",
-            "50g Parmigiano Reggiano",
-            "Black pepper",
-            "Salt"
-        ],
-        steps: [
-            "Bring a large pot of salted water to boil",
-            "Cook pasta according to package instructions",
-            "Meanwhile, crisp the pancetta in a pan",
-            "Mix eggs, cheese, and pepper in a bowl",
-            "Combine hot pasta with egg mixture and pancetta"
-        ],
-        description: "Classic Italian carbonara made with fresh ingredients. A perfect comfort food for any day!"
-    }, {
-        id: 2,
-        author: "Baker John",
-        username: "bakerjohn",
-        authorAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop",
-        image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80",
-        title: "Artisan Sourdough Bread",
-        likes: 2156,
-        category:"soup",
-        comments: 167,
-        prepTime: 120,
-        cookTime: 45,
-        difficulty: "Advanced",
-        ingredients: [
-            "500g bread flour",
-            "350g water",
-            "100g active sourdough starter",
-            "10g salt"
-        ],
-        steps: [
-            "Mix flour and water, let autolyse for 1 hour",
-            "Add starter and salt, perform stretch and folds",
-            "Bulk ferment for 4-6 hours",
-            "Shape and cold proof overnight",
-            "Bake in Dutch oven at 450°F"
-        ],
-        description: "Crusty on the outside, soft on the inside. 24-hour fermented sourdough bread."
-    }
+    description:
+      "Crusty on the outside, soft on the inside. 24-hour fermented sourdough bread.",
+  },
+  {
+    id: 3,
+    author: "Chef Emily",
+    username: "chefemily",
+    authorAvatar:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80",
+    title: "Hearty Vegetable Soup",
+    likes: 987,
+    category: "soup",
+    comments: 56,
+    prepTime: 20,
+    cookTime: 40,
+    difficulty: "Easy",
+    ingredients: [
+      "2 tbsp olive oil",
+      "1 onion, chopped",
+      "2 carrots, sliced",
+      "2 celery stalks, chopped",
+      "3 garlic cloves, minced",
+      "1 can diced tomatoes",
+      "1 cup green beans",
+      "1 cup corn",
+      "1 cup peas",
+      "6 cups vegetable broth",
+      "Salt and pepper to taste",
+    ],
+    steps: [
+      "Heat olive oil in a large pot",
+      "Sauté onion, carrots, and celery until softened",
+      "Add garlic and cook for another minute",
+      "Add tomatoes, green beans, corn, peas, and broth",
+      "Simmer for 30 minutes",
+      "Season with salt and pepper",
+    ],
+    description:
+      "A comforting and nutritious vegetable soup that's perfect for a cold day.",
+  },
+  {
+    id: 4,
+    author: "Chef Carlos",
+    username: "chefcarlos",
+    authorAvatar:
+      "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&h=150&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80",
+    title: "Classic Beef Burger",
+    likes: 3456,
+    category: "dinner",
+    comments: 234,
+    prepTime: 15,
+    cookTime: 10,
+    difficulty: "Easy",
+    ingredients: [
+      "500g ground beef",
+      "1 tsp salt",
+      "1/2 tsp black pepper",
+      "1/2 tsp garlic powder",
+      "4 burger buns",
+      "Lettuce, tomato, onion, pickles",
+      "Cheese slices",
+      "Ketchup and mustard",
+    ],
+    steps: [
+      "Mix ground beef with salt, pepper, and garlic powder",
+      "Form into 4 patties",
+      "Grill or fry patties for 4-5 minutes on each side",
+      "Toast burger buns",
+      "Assemble burgers with toppings and condiments",
+    ],
+    description:
+      "Juicy and flavorful beef burgers that are perfect for a weekend barbecue.",
+  },
+  {
+    id: 5,
+    author: "Pastry Chef Anna",
+    username: "chefanna",
+    authorAvatar:
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&q=80",
+    title: "Decadent Chocolate Cake",
+    likes: 4321,
+    category: "dessert",
+    comments: 321,
+    prepTime: 30,
+    cookTime: 40,
+    difficulty: "Intermediate",
+    ingredients: [
+      "200g all-purpose flour",
+      "200g sugar",
+      "100g cocoa powder",
+      "1 tsp baking powder",
+      "1/2 tsp baking soda",
+      "1/2 tsp salt",
+      "2 eggs",
+      "150ml milk",
+      "100ml vegetable oil",
+      "2 tsp vanilla extract",
+      "150ml boiling water",
+    ],
+    steps: [
+      "Preheat oven to 350°F (175°C)",
+      "Mix dry ingredients in a bowl",
+      "Add eggs, milk, oil, and vanilla, and mix well",
+      "Stir in boiling water until the batter is smooth",
+      "Pour into a greased cake pan and bake for 40 minutes",
+      "Let cool before serving",
+    ],
+    description:
+      "A rich and moist chocolate cake that's perfect for any celebration.",
+  },
+  {
+    id: 6,
+    author: "Chef Luca",
+    username: "chefluca",
+    authorAvatar:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?w=800&q=80",
+    title: "Creamy Mushroom Risotto",
+    likes: 1789,
+    category: "dinner",
+    comments: 123,
+    prepTime: 10,
+    cookTime: 30,
+    difficulty: "Intermediate",
+    ingredients: [
+      "300g Arborio rice",
+      "1 liter vegetable broth",
+      "200g mushrooms, sliced",
+      "1 onion, finely chopped",
+      "2 garlic cloves, minced",
+      "100ml white wine",
+      "50g butter",
+      "50g Parmesan cheese",
+      "Salt and pepper to taste",
+    ],
+    steps: [
+      "Heat broth in a pot and keep warm",
+      "Sauté onion and garlic in butter until soft",
+      "Add mushrooms and cook until tender",
+      "Stir in rice and cook for 2 minutes",
+      "Add wine and cook until absorbed",
+      "Add broth one ladle at a time, stirring until absorbed",
+      "Stir in Parmesan and season with salt and pepper",
+    ],
+    description:
+      "A creamy and comforting risotto with earthy mushrooms and rich Parmesan.",
+  },
 ];
 
-export  default recipes
+export default recipes;

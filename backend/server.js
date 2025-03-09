@@ -3,6 +3,8 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectDB from "./src/db/index.js";
+import router from "./src/routes/index.routes.js"; // Import your main router
+
 
 const app = express();
 
@@ -17,10 +19,8 @@ app.use(
 );
 app.use(cookieParser());
 
-// Routes
-import routes from "./src/routes/index.js";
-app.use("/api/v1", routes);
-
+// Routes (to be added)
+app.use('/api/v1', router)
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

@@ -3,7 +3,7 @@ import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const { Schema } = mongoose;
 
-const CATEGORIES = [
+export const CATEGORIES = [
   "APPETIZERS",
   "MAIN COURSES",
   "SIDE DISHES",

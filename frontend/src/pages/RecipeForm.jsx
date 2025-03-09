@@ -1,404 +1,499 @@
-import React, { useState } from 'react';
-import { Plus, X, Upload, ChefHat, Clock, Image, Video } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import {
+  Plus,
+  X,
+  Upload,
+  ChefHat,
+  Clock,
+  Image,
+  Video,
+  Trash2,
+} from "lucide-react";
+import { publishRecipe } from "../features/recipes/recipeSlice";
 
-const DifficultyBadge = ({ level, isSelected }) => {
-    const baseClasses = "px-4 py-2 rounded-full font-medium text-sm transition-all duration-200 cursor-pointer";
-    const variants = {
-        Easy: isSelected
-            ? "bg-green-500 text-white"
-            : "bg-green-100 text-green-600 hover:bg-green-200",
-        Intermediate: isSelected
-            ? "bg-yellow-500 text-white"
-            : "bg-yellow-100 text-yellow-600 hover:bg-yellow-200",
-        Advanced: isSelected
-            ? "bg-red-500 text-white"
-            : "bg-red-100 text-red-600 hover:bg-red-200"
-    };
+const DifficultyBadge = ({ level, isSelected, onClick }) => {
+  const baseClasses =
+    "px-4 py-2 rounded-full font-medium text-sm transition-all duration-200 cursor-pointer";
+  const variants = {
+    Easy: isSelected
+      ? "bg-green-500 text-white"
+      : "bg-green-100 text-green-600 hover:bg-green-200",
+    Medium: isSelected
+      ? "bg-yellow-500 text-white"
+      : "bg-yellow-100 text-yellow-600 hover:bg-yellow-200",
+    Hard: isSelected
+      ? "bg-red-500 text-white"
+      : "bg-red-100 text-red-600 hover:bg-red-200",
+  };
 
-    return (
-        <div className={`${baseClasses} ${variants[level]}`}>
-            {level}
-        </div>
-    );
+  return (
+    <div className={`${baseClasses} ${variants[level]}`} onClick={onClick}>
+      {level}
+    </div>
+  );
 };
 
 const categories = [
-    { value: 'appetizers', label: 'APPETIZERS' },
-    { value: 'main-courses', label: 'MAIN COURSES' },
-    { value: 'side-dishes', label: 'SIDE DISHES' },
-    { value: 'desserts', label: 'DESSERTS' },
-    { value: 'soups-salads', label: 'SOUPS & SALADS' },
-    { value: 'beverages', label: 'BEVERAGES' },
-    { value: 'snacks', label: 'SNACKS' },
-    { value: 'vegetarian', label: 'VEGETARIAN' }
+  { value: "appetizers", label: "APPETIZERS" },
+  { value: "main-courses", label: "MAIN COURSES" },
+  { value: "side-dishes", label: "SIDE DISHES" },
+  { value: "desserts", label: "DESSERTS" },
+  { value: "soups-salads", label: "SOUPS & SALADS" },
+  { value: "beverages", label: "BEVERAGES" },
+  { value: "snacks", label: "SNACKS" },
+  { value: "vegetarian", label: "VEGETARIAN" },
 ];
 
-export const RecipeForm = () => {
-    const [formData, setFormData] = useState({
-        author: "Chef Maria",
-        username: "chefmaria",
-        authorAvatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop",
-        title: '',
-        prepTime: '',
-        cookTime: '',
-        difficulty: 'Easy',
-        description: '',
-        ingredients: [''],
-        instructions: [''],
-        category: '',
-        mediaType: 'photo',
-        image: null,
-        video: null,
-        likes: 0,
-        comments: 0,
-    });
+const RecipeForm = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { loading, error } = useSelector((state) => state.recipes);
 
-    const handleChange = (e) => {
-        const { name, value, files } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: files ? files[0] : value,
-        }));
-    };
+  const [formData, setFormData] = useState({
+    title: "",
+    prepTime: "",
+    cookTime: "",
+    difficulty: "Easy",
+    description: "",
+    ingredients: [""],
+    instructions: [""],
+    category: "",
+    mediaType: "photo",
+    image: null,
+    video: null,
+  });
 
-    const handleDifficultyChange = (difficulty) => {
-        setFormData((prevData) => ({
-            ...prevData,
-            difficulty,
-        }));
-    };
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: files ? files[0] : value,
+    }));
+  };
 
-    const handleIngredientChange = (index, value) => {
-        const newIngredients = [...formData.ingredients];
-        newIngredients[index] = value;
-        setFormData((prevData) => ({
-            ...prevData,
-            ingredients: newIngredients,
-        }));
-    };
+  const handleDifficultyChange = (difficulty) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      difficulty,
+    }));
+  };
 
-    const handleInstructionChange = (index, value) => {
-        const newInstructions = [...formData.instructions];
-        newInstructions[index] = value;
-        setFormData((prevData) => ({
-            ...prevData,
-            instructions: newInstructions,
-        }));
-    };
+  const handleDynamicChange = (index, field, value) => {
+    const newItems = [...formData[field]];
+    newItems[index] = value;
+    setFormData((prevData) => ({
+      ...prevData,
+      [field]: newItems,
+    }));
+  };
 
-    const addIngredient = () => {
-        setFormData((prevData) => ({
-            ...prevData,
-            ingredients: [...prevData.ingredients, ''],
-        }));
-    };
+  const addItem = (field) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [field]: [...prevData[field], ""],
+    }));
+  };
 
-    const removeIngredient = (index) => {
-        if (formData.ingredients.length > 1) {
-            setFormData((prevData) => ({
-                ...prevData,
-                ingredients: prevData.ingredients.filter((_, i) => i !== index),
-            }));
-        }
-    };
+  const removeItem = (index, field) => {
+    if (formData[field].length > 1) {
+      setFormData((prevData) => ({
+        ...prevData,
+        [field]: prevData[field].filter((_, i) => i !== index),
+      }));
+    }
+  };
 
-    const addInstruction = () => {
-        setFormData((prevData) => ({
-            ...prevData,
-            instructions: [...prevData.instructions, ''],
-        }));
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    const removeInstruction = (index) => {
-        if (formData.instructions.length > 1) {
-            setFormData((prevData) => ({
-                ...prevData,
-                instructions: prevData.instructions.filter((_, i) => i !== index),
-            }));
-        }
-    };
+    // Form validation
+    if (
+      !formData.title ||
+      !formData.description ||
+      !formData.category ||
+      !formData.prepTime ||
+      !formData.cookTime ||
+      !formData.difficulty ||
+      (formData.mediaType === "photo" && !formData.image) ||
+      (formData.mediaType === "video" && !formData.video) ||
+      formData.ingredients.some((ing) => !ing) ||
+      formData.instructions.some((step) => !step)
+    ) {
+      alert("Please fill in all required fields.");
+      return;
+    }
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const slug = formData.title.toLowerCase().replace(/ /g, '-');
-        const ingredientsArray = formData.ingredients.filter(ingredient => ingredient.trim().length > 0);
-        const stepsArray = formData.instructions.filter(step => step.trim().length > 0);
+    try {
+      // Create FormData object from the form
+      const formDataToSend = new FormData();
 
-        const newRecipe = {
-            id: Date.now(),
-            author: formData.author,
-            username: formData.username,
-            authorAvatar: formData.authorAvatar,
-            image: formData.mediaType === 'photo'
-                ? (formData.image ? URL.createObjectURL(formData.image) : "/api/placeholder/800/600")
-                : null,
-            videoUrl: formData.mediaType === 'video' ? formData.videoUrl : null,
-            title: formData.title,
-            category: formData.category,
-            likes: 0,
-            comments: 0,
-            prepTime: parseInt(formData.prepTime),
-            cookTime: parseInt(formData.cookTime),
-            difficulty: formData.difficulty,
-            ingredients: ingredientsArray,
-            steps: stepsArray,
-            description: formData.description,
-        };
+      // Add basic fields
+      formDataToSend.append("title", formData.title);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("category", formData.category);
+      formDataToSend.append("prepTime", formData.prepTime);
+      formDataToSend.append("cookTime", formData.cookTime);
+      formDataToSend.append("difficulty", formData.difficulty);
+      formDataToSend.append("mediaType", formData.mediaType);
 
-        console.log('New Recipe:', newRecipe);
-        console.log('Slug:', slug);
-    };
+      // Add the correct media file based on selected type
+      if (formData.mediaType === "photo") {
+        formDataToSend.append("mediaFile", formData.image);
+      } else {
+        formDataToSend.append("mediaFile", formData.video);
+      }
 
-    return (
-        <div className="min-h-screen pt-16 px-4 bg-gray-50">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl mx-auto my-8">
-                <div className="p-6 space-y-6">
-                    <div className="flex justify-between items-center border-b pb-4">
-                        <div className="flex items-center space-x-2">
-                            <ChefHat className="h-8 w-8 text-orange-500" />
-                            <h2 className="text-2xl font-bold text-gray-800">Create New Recipe</h2>
-                        </div>
-                        <Link to="/"
-                              className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
-                        >
-                            <X className="h-5 w-5" />
-                        </Link>
-                    </div>
+      // Add arrays
+      formData.instructions.forEach((instruction, index) => {
+        formDataToSend.append("steps", instruction);
+      });
 
-                    {/* Media Type Toggle */}
-                    <div className="flex gap-4 border-b pb-4">
-                        <button
-                            type="button"
-                            onClick={() => setFormData(prev => ({ ...prev, mediaType: 'photo' }))}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                                formData.mediaType === 'photo'
-                                    ? 'bg-orange-500 text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
-                        >
-                            <Image className="h-5 w-5" />
-                            <span>Photo Recipe</span>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setFormData(prev => ({ ...prev, mediaType: 'video' }))}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                                formData.mediaType === 'video'
-                                    ? 'bg-orange-500 text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
-                        >
-                            <Video className="h-5 w-5" />
-                            <span>Video Recipe</span>
-                        </button>
-                    </div>
+      formData.ingredients.forEach((ingredient, index) => {
+        formDataToSend.append("ingredients", ingredient);
+      });
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-4">
-                                <input
-                                    type="text"
-                                    name="title"
-                                    placeholder="Recipe Name"
-                                    value={formData.title}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
-                                    required
-                                />
+      // Dispatch action and navigate on success
+      await dispatch(publishRecipe(formDataToSend)).unwrap();
+      navigate("/");
+    } catch (err) {
+      console.error("Submission failed:", err);
+    }
+  };
 
-                                <select
-                                    name="category"
-                                    value={formData.category}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
-                                    required
-                                >
-                                    <option value="">Select Category</option>
-                                    {categories.map(category => (
-                                        <option key={category.value} value={category.value}>
-                                            {category.label}
-                                        </option>
-                                    ))}
-                                </select>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="relative">
-                                        <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                        <input
-                                            type="number"
-                                            name="prepTime"
-                                            placeholder="Prep Time (mins)"
-                                            value={formData.prepTime}
-                                            onChange={handleChange}
-                                            className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="relative">
-                                        <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                        <input
-                                            type="number"
-                                            name="cookTime"
-                                            placeholder="Cook Time (mins)"
-                                            value={formData.cookTime}
-                                            onChange={handleChange}
-                                            className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-medium text-gray-700">Difficulty Level</label>
-                                    <div className="flex gap-4">
-                                        {['Easy', 'Intermediate', 'Advanced'].map((level) => (
-                                            <div
-                                                key={level}
-                                                onClick={() => handleDifficultyChange(level)}
-                                                className="cursor-pointer"
-                                            >
-                                                <DifficultyBadge
-                                                    level={level}
-                                                    isSelected={formData.difficulty === level}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <textarea
-                                    name="description"
-                                    placeholder="Recipe Description"
-                                    value={formData.description}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 min-h-[100px]"
-                                    required
-                                />
-
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-medium text-gray-700">Ingredients</label>
-                                    <div className="space-y-2">
-                                        {formData.ingredients.map((ingredient, index) => (
-                                            <div key={index} className="flex gap-2">
-                                                <input
-                                                    type="text"
-                                                    placeholder={`Ingredient ${index + 1}`}
-                                                    value={ingredient}
-                                                    onChange={(e) => handleIngredientChange(index, e.target.value)}
-                                                    className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                    required
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeIngredient(index)}
-                                                    className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
-                                                    disabled={formData.ingredients.length === 1}
-                                                >
-                                                    <X className="h-5 w-5" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                        <button
-                                            type="button"
-                                            onClick={addIngredient}
-                                            className="w-full py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <Plus className="h-5 w-5" />
-                                            <span>Add Ingredient</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">Instructions</label>
-                                <div className="space-y-2">
-                                    {formData.instructions.map((instruction, index) => (
-                                        <div key={index} className="flex gap-2">
-                                            <textarea
-                                                placeholder={`Step ${index + 1}`}
-                                                value={instruction}
-                                                onChange={(e) => handleInstructionChange(index, e.target.value)}
-                                                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                required
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => removeInstruction(index)}
-                                                className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
-                                                disabled={formData.instructions.length === 1}
-                                            >
-                                                <X className="h-5 w-5" />
-                                            </button>
-                                        </div>
-                                    ))}
-                                    <button
-                                        type="button"
-                                        onClick={addInstruction}
-                                        className="w-full py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <Plus className="h-5 w-5" />
-                                        <span>Add Instruction</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Media Upload Section */}
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    {formData.mediaType === 'photo' ? 'Recipe Image' : 'Recipe Video'}
-                                </label>
-                                {formData.mediaType === 'photo' ? (
-                                    <div className="relative">
-                                        <input
-                                            type="file"
-                                            name="image"
-                                            accept="image/*"
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                            required
-                                        />
-                                        <Upload className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                                    </div>
-                                ) : (
-                                    <div className="relative">
-                                        <input
-                                            type="file"
-                                            name="video"
-                                            accept="video/*"
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                            required
-                                        />
-                                        <Upload className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none"/>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end gap-4 pt-4 border-t">
-                            <Link to="/"
-                                  className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                            >
-                                Cancel
-                            </Link>
-                            <button
-                                type="submit"
-                                className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-                            >
-                                Create Recipe
-                            </button>
-                        </div>
-                    </form>
-                </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-r from-orange-100 to-yellow-100 py-12 px-4">
+      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden">
+        <div className="p-6 md:p-8">
+          <div className="flex justify-between items-center border-b pb-4 mb-6">
+            <div className="flex items-center space-x-3">
+              <ChefHat className="h-8 w-8 text-orange-500" />
+              <h1 className="text-2xl font-bold text-gray-800">
+                Create New Recipe
+              </h1>
             </div>
+            <button
+              onClick={() => navigate("/")}
+              className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="flex gap-4 mb-6">
+            <button
+              type="button"
+              onClick={() =>
+                setFormData((prev) => ({ ...prev, mediaType: "photo" }))
+              }
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                formData.mediaType === "photo"
+                  ? "bg-orange-500 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              <Image className="h-5 w-5" />
+              <span>Photo Recipe</span>
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                setFormData((prev) => ({ ...prev, mediaType: "video" }))
+              }
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                formData.mediaType === "video"
+                  ? "bg-orange-500 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              <Video className="h-5 w-5" />
+              <span>Video Recipe</span>
+            </button>
+          </div>
+
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-6"
+            encType="multipart/form-data"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Recipe Name
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    placeholder="e.g., Homemade Margherita Pizza"
+                    value={formData.title}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Category
+                  </label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                    required
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map((category) => (
+                      <option key={category.value} value={category.value}>
+                        {category.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Prep Time (mins)
+                    </label>
+                    <div className="relative">
+                      <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="number"
+                        name="prepTime"
+                        placeholder="15"
+                        value={formData.prepTime}
+                        onChange={handleChange}
+                        className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Cook Time (mins)
+                    </label>
+                    <div className="relative">
+                      <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="number"
+                        name="cookTime"
+                        placeholder="30"
+                        value={formData.cookTime}
+                        onChange={handleChange}
+                        className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Difficulty Level
+                  </label>
+                  <div className="flex gap-4">
+                    {["Easy", "Medium", "Hard"].map((level) => (
+                      <DifficultyBadge
+                        key={level}
+                        level={level}
+                        isSelected={formData.difficulty === level}
+                        onClick={() => handleDifficultyChange(level)}
+                      />
+                    ))}
+                  </div>
+                  <input
+                    type="hidden"
+                    name="difficulty"
+                    value={formData.difficulty}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {formData.mediaType === "photo"
+                      ? "Recipe Image"
+                      : "Recipe Video"}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      name="mediaFile"
+                      accept={
+                        formData.mediaType === "photo" ? "image/*" : "video/*"
+                      }
+                      onChange={(e) => {
+                        if (formData.mediaType === "photo") {
+                          handleChange({
+                            target: {
+                              name: "image",
+                              files: e.target.files,
+                            },
+                          });
+                        } else {
+                          handleChange({
+                            target: {
+                              name: "video",
+                              files: e.target.files,
+                            },
+                          });
+                        }
+                      }}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      required
+                    />
+                    <Upload className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                  </div>
+                  {formData.mediaType === "photo" && formData.image && (
+                    <p className="mt-1 text-sm text-gray-500">
+                      Selected: {formData.image.name}
+                    </p>
+                  )}
+                  {formData.mediaType === "video" && formData.video && (
+                    <p className="mt-1 text-sm text-gray-500">
+                      Selected: {formData.video.name}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Recipe Description
+                  </label>
+                  <textarea
+                    name="description"
+                    placeholder="Tell us about your recipe..."
+                    value={formData.description}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 min-h-[120px]"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ingredients
+                  </label>
+                  <div className="space-y-2">
+                    {formData.ingredients.map((ingredient, index) => (
+                      <div key={index} className="flex gap-2">
+                        <input
+                          type="text"
+                          name="ingredients"
+                          placeholder={`e.g., 2 cups of flour`}
+                          value={ingredient}
+                          onChange={(e) =>
+                            handleDynamicChange(
+                              index,
+                              "ingredients",
+                              e.target.value
+                            )
+                          }
+                          className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeItem(index, "ingredients")}
+                          className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                          disabled={formData.ingredients.length === 1}
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => addItem("ingredients")}
+                      className="w-full py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Plus className="h-5 w-5" />
+                      <span>Add Ingredient</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Instructions
+              </label>
+              <div className="space-y-2">
+                {formData.instructions.map((instruction, index) => (
+                  <div key={index} className="flex gap-2">
+                    <textarea
+                      name="steps"
+                      placeholder={`Step ${index + 1}: Mix the ingredients...`}
+                      value={instruction}
+                      onChange={(e) =>
+                        handleDynamicChange(
+                          index,
+                          "instructions",
+                          e.target.value
+                        )
+                      }
+                      className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 min-h-[80px]"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeItem(index, "instructions")}
+                      className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors self-start"
+                      disabled={formData.instructions.length === 1}
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => addItem("instructions")}
+                  className="w-full py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Plus className="h-5 w-5" />
+                  <span>Add Instruction</span>
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <div className="text-red-500 text-center mt-4">{error}</div>
+            )}
+
+            <div className="flex justify-end gap-4 pt-4 border-t">
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:bg-orange-300 flex items-center gap-2"
+              >
+                {loading ? (
+                  "Publishing..."
+                ) : (
+                  <>
+                    <ChefHat className="h-5 w-5" />
+                    <span>Publish Recipe</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default RecipeForm;

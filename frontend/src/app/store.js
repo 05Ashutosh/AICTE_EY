@@ -1,8 +1,10 @@
-import {configureStore} from "@reduxjs/toolkit";
-import authSlice from "../features/auth/authSlice.js";
+import { configureStore } from "@reduxjs/toolkit";
+import authReducer from "../features/auth/authSlice"; // Default export from authSlice
+import recipeReducer from "../features/recipes/recipeSlice"; // Default export from recipeSlice
 
 export const store = configureStore({
-    reducer: {
-        auth: authSlice,
-    }
-})
+  reducer: {
+    auth: authReducer,
+    recipes: recipeReducer,
+  },
+});

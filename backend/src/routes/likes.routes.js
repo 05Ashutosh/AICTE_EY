@@ -1,14 +1,13 @@
 // like.routes.js
 import { Router } from 'express';
-import { 
-    toggleVideoLike, 
-    toggleCommentLike, 
-    getLikedVideos 
+import {
+    toggleVideoLike,
+    toggleCommentLike,
+    getLikedVideos
 } from '../controllers/like.controller.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
 
-const router = Router();verifyJWT, import { router } from './auth.routes.js';
-
+const router = Router();
 
 // All routes need authentication
 router.use(verifyJWT);

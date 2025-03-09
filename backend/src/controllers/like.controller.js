@@ -1,15 +1,15 @@
 import mongoose from "mongoose";
-import { ApiError } from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { APIError } from "../utils/APIError.js";
+import { APIResponse } from "../utils/APIResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Like } from "../models/like.model.js";
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
-  const { videoId } = req.params;
+  const {videoId} = req.params;
 
   // Check if video exists
   if (!videoId) {
-    throw new ApiError(400, "Video ID is required");
+    throw new APIError(400, "Video ID is required");
   }
 
   const existingLike = await Like.findOne({
@@ -21,8 +21,8 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     // Unlike if already liked
     await Like.findByIdAndDelete(existingLike._id);
     return res
-      .status(200)
-      .json(new ApiResponse(200, {}, "Video unliked successfully"));
+        .status(200)
+        .json(new APIResponse(200, {}, "Video unliked successfully"));
   }
 
   // Create new like
@@ -32,15 +32,15 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
   });
 
   return res
-    .status(200)
-    .json(new ApiResponse(200, {}, "Video liked successfully"));
+      .status(200)
+      .json(new APIResponse(200, {}, "Video liked successfully"));
 });
 
 const toggleCommentLike = asyncHandler(async (req, res) => {
-  const { commentId } = req.params;
+  const {commentId} = req.params;
 
   if (!commentId) {
-    throw new ApiError(400, "Comment ID is required");
+    throw new APIError(400, "Comment ID is required");
   }
 
   const existingLike = await Like.findOne({
@@ -51,8 +51,8 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
   if (existingLike) {
     await Like.findByIdAndDelete(existingLike._id);
     return res
-      .status(200)
-      .json(new ApiResponse(200, {}, "Comment unliked successfully"));
+        .status(200)
+        .json(new APIResponse(200, {}, "Comment unliked successfully"));
   }
 
   await Like.create({
@@ -61,8 +61,8 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
   });
 
   return res
-    .status(200)
-    .json(new ApiResponse(200, {}, "Comment liked successfully"));
+      .status(200)
+      .json(new APIResponse(200, {}, "Comment liked successfully"));
 });
 
 const getLikedVideos = asyncHandler(async (req, res) => {
@@ -70,7 +70,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     {
       $match: {
         likedBy: new mongoose.Types.ObjectId(req.user?._id),
-        video: { $exists: true },
+        video: {$exists: true},
       },
     },
     {
@@ -93,10 +93,10 @@ const getLikedVideos = asyncHandler(async (req, res) => {
   ]);
 
   return res
-    .status(200)
-    .json(
-      new ApiResponse(200, likedVideos, "Liked videos fetched successfully")
-    );
+      .status(200)
+      .json(
+          new APIResponse(200, likedVideos, "Liked videos fetched successfully")
+      );
 });
 
 export { toggleVideoLike, toggleCommentLike, getLikedVideos };

@@ -1,6 +1,8 @@
-const { type } = require("express/lib/response");
-const { Schema } = require("mongoose");
+import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
+import bcrypt from "bcrypt"; // Added missing import
 
+const { Schema } = mongoose;
 const userSchema = new Schema(
   {
     username: {
